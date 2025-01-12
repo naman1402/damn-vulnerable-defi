@@ -20,6 +20,7 @@ contract UnstoppableMonitor is Owned, IERC3156FlashBorrower {
         vault = UnstoppableVault(_vault);
     }
 
+    // can be called by vault contract only
     function onFlashLoan(address initiator, address token, uint256 amount, uint256 fee, bytes calldata)
         external
         returns (bytes32)
@@ -28,11 +29,14 @@ contract UnstoppableMonitor is Owned, IERC3156FlashBorrower {
             revert UnexpectedFlashLoan();
         }
 
+        // This function is called by vault only
+        // Approves token from user to vault TO RETURN THE FLASH LOAN
         ERC20(token).approve(address(vault), amount);
-
+        // This bytes32 is a magic value that is returned by the flash loan callback
         return keccak256("IERC3156FlashBorrower.onFlashLoan");
     }
 
+    // owner of this monitor contract can call this function to call flashloan function of vault 
     function checkFlashLoan(uint256 amount) external onlyOwner {
         require(amount > 0);
 

@@ -40,6 +40,10 @@ contract NaiveReceiverPool is Multicall, IERC3156FlashLender {
         return FIXED_FEE;
     }
 
+
+    /// note player must execute less than or equal to 2 trnactions, vm.getNonce(player)
+    // can drain receiver by calling fl with amount = 0, fee = 1 weth
+    // can call 10 FL in single transaction using Multicall, satisfy nonce condition and drain 10 ETH from FlashLoanReceiver
     function flashLoan(IERC3156FlashBorrower receiver, address token, uint256 amount, bytes calldata data)
         external
         returns (bool)
@@ -50,6 +54,7 @@ contract NaiveReceiverPool is Multicall, IERC3156FlashLender {
         weth.transfer(address(receiver), amount);
         totalDeposits -= amount;
 
+        // Handle callback, FlashLoanReceiver.sol contract 
         if (receiver.onFlashLoan(msg.sender, address(weth), amount, FIXED_FEE, data) != CALLBACK_SUCCESS) {
             revert CallbackFailed();
         }
@@ -83,6 +88,8 @@ contract NaiveReceiverPool is Multicall, IERC3156FlashLender {
         totalDeposits += amount;
     }
 
+    // @audit NaiveReceiverPool can be drained because of this function
+    // first condition returns the last 20 bytes of the address, which can be manipulated but we have to use trustedForwarder to execute a meta transaction
     function _msgSender() internal view override returns (address) {
         if (msg.sender == trustedForwarder && msg.data.length >= 20) {
             return address(bytes20(msg.data[msg.data.length - 20:]));

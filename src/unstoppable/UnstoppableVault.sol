@@ -82,6 +82,10 @@ contract UnstoppableVault is IERC3156FlashLender, ReentrancyGuard, Owned, ERC462
         if (amount == 0) revert InvalidAmount(0); // fail early
         if (address(asset) != _token) revert UnsupportedCurrency(); // enforce ERC3156 requirement
         uint256 balanceBefore = totalAssets();
+
+        // we have to stop this vault from giving flashloan
+        // if this condition fails everytime, then our attack will work
+        // @audit if we directly transfer asset token to this vault, balanceBefore will be greater than convertToShares(totalSupply)
         if (convertToShares(totalSupply) != balanceBefore) revert InvalidBalance(); // enforce ERC4626 requirement
 
         // transfer tokens out + execute callback on receiver
@@ -89,6 +93,7 @@ contract UnstoppableVault is IERC3156FlashLender, ReentrancyGuard, Owned, ERC462
 
         // callback must return magic value, otherwise assume it failed
         uint256 fee = flashFee(_token, amount);
+        // This magic value is returned by the monitor contract function (onFlashLoan)
         if (
             receiver.onFlashLoan(msg.sender, address(asset), amount, fee, data)
                 != keccak256("IERC3156FlashBorrower.onFlashLoan")
@@ -97,7 +102,9 @@ contract UnstoppableVault is IERC3156FlashLender, ReentrancyGuard, Owned, ERC462
         }
 
         // pull amount + fee from receiver, then pay the fee to the recipient
+        // this contract has approval so tokens can be transferred back to vault
         ERC20(_token).safeTransferFrom(address(receiver), address(this), amount + fee);
+        // sending fees to fee recipient
         ERC20(_token).safeTransfer(feeRecipient, fee);
 
         return true;
@@ -113,6 +120,7 @@ contract UnstoppableVault is IERC3156FlashLender, ReentrancyGuard, Owned, ERC462
      */
     function afterDeposit(uint256 assets, uint256 shares) internal override nonReentrant whenNotPaused {}
 
+    // vault cannot be fee recipient
     function setFeeRecipient(address _feeRecipient) external onlyOwner {
         if (_feeRecipient != address(this)) {
             feeRecipient = _feeRecipient;
