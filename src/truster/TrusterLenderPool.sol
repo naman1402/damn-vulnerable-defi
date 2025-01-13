@@ -25,6 +25,11 @@ contract TrusterLenderPool is ReentrancyGuard {
         uint256 balanceBefore = token.balanceOf(address(this));
 
         token.transfer(borrower, amount);
+
+        // @audit arbitary call
+        // can use token as target and call approve function 
+        // note target cannot be controllable 
+        // attack contract in test contract
         target.functionCall(data);
 
         if (token.balanceOf(address(this)) < balanceBefore) {
