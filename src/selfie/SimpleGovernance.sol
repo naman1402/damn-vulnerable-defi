@@ -21,10 +21,15 @@ contract SimpleGovernance is ISimpleGovernance {
     }
 
     function queueAction(address target, uint128 value, bytes calldata data) external returns (uint256 actionId) {
+        // more than 50%
+        // @audit inherits ERC20Votes
+        // using flashloan to get more than 50% of power [_receiver.onFlashLoan(msg.sender, _token, _amount, 0, _data)]
+        // then call queueAction function followed by executeAction function
+        // call emergencyExit function and loot the pool 
         if (!_hasEnoughVotes(msg.sender)) {
             revert NotEnoughVotes(msg.sender);
         }
-
+        // cannot call function of this contract 
         if (target == address(this)) {
             revert InvalidTarget();
         }
@@ -50,6 +55,7 @@ contract SimpleGovernance is ISimpleGovernance {
         emit ActionQueued(actionId, msg.sender);
     }
 
+    // condition: created and not executed, time limit should have passed
     function executeAction(uint256 actionId) external payable returns (bytes memory) {
         if (!_canBeExecuted(actionId)) {
             revert CannotExecute(actionId);
@@ -59,7 +65,7 @@ contract SimpleGovernance is ISimpleGovernance {
         actionToExecute.executedAt = uint64(block.timestamp);
 
         emit ActionExecuted(actionId, msg.sender);
-
+        // we have to this, target is selfie pool and data is emergencyExit, value is recovery address 
         return actionToExecute.target.functionCallWithValue(actionToExecute.data, actionToExecute.value);
     }
 
@@ -94,9 +100,11 @@ contract SimpleGovernance is ISimpleGovernance {
             timeDelta = uint64(block.timestamp) - actionToExecute.proposedAt;
         }
 
+        // not been executed before, time limit has passed
         return actionToExecute.executedAt == 0 && timeDelta >= ACTION_DELAY_IN_SECONDS;
     }
 
+    // requirement is more than 50% of the voting power
     function _hasEnoughVotes(address who) private view returns (bool) {
         uint256 balance = _votingToken.getVotes(who);
         uint256 halfTotalSupply = _votingToken.totalSupply() / 2;

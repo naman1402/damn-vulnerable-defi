@@ -21,6 +21,8 @@ contract SelfiePool is IERC3156FlashLender, ReentrancyGuard {
 
     event EmergencyExit(address indexed receiver, uint256 amount);
 
+    // have to bypass this
+    // note make sure governance calls emergencyExit function
     modifier onlyGovernance() {
         if (msg.sender != address(governance)) {
             revert CallerNotGovernance();
@@ -68,6 +70,7 @@ contract SelfiePool is IERC3156FlashLender, ReentrancyGuard {
         return true;
     }
 
+    // way to withdraw all tokens from the pool
     function emergencyExit(address receiver) external onlyGovernance {
         uint256 amount = token.balanceOf(address(this));
         token.transfer(receiver, amount);
