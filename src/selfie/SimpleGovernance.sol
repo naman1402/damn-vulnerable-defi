@@ -25,11 +25,11 @@ contract SimpleGovernance is ISimpleGovernance {
         // @audit inherits ERC20Votes
         // using flashloan to get more than 50% of power [_receiver.onFlashLoan(msg.sender, _token, _amount, 0, _data)]
         // then call queueAction function followed by executeAction function
-        // call emergencyExit function and loot the pool 
+        // call emergencyExit function and loot the pool
         if (!_hasEnoughVotes(msg.sender)) {
             revert NotEnoughVotes(msg.sender);
         }
-        // cannot call function of this contract 
+        // cannot call function of this contract
         if (target == address(this)) {
             revert InvalidTarget();
         }
@@ -65,7 +65,7 @@ contract SimpleGovernance is ISimpleGovernance {
         actionToExecute.executedAt = uint64(block.timestamp);
 
         emit ActionExecuted(actionId, msg.sender);
-        // we have to this, target is selfie pool and data is emergencyExit, value is recovery address 
+        // we have to this, target is selfie pool and data is emergencyExit, value is recovery address
         return actionToExecute.target.functionCallWithValue(actionToExecute.data, actionToExecute.value);
     }
 

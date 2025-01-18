@@ -164,7 +164,7 @@ contract TheRewarderChallenge is Test {
         Claim[] memory claims = new Claim[](totalTxCount);
 
         // create array of duplicate claims, use same batchnumber and proof
-        for (uint i = 0; i < totalTxCount; i++) {
+        for (uint256 i = 0; i < totalTxCount; i++) {
             if (i < dvtTxCount) {
                 claims[i] = Claim({
                     batchNumber: 0, // claim corresponds to first DVT batch
@@ -177,7 +177,7 @@ contract TheRewarderChallenge is Test {
                     batchNumber: 0, // claim corresponds to first DVT batch
                     amount: PLAYER_WETH_CLAIM_AMOUNT,
                     tokenIndex: 1, // claim corresponds to first token in `tokensToClaim` array
-                    proof: merkle.getProof(wethLeaves, 188)  //player at index 188
+                    proof: merkle.getProof(wethLeaves, 188) //player at index 188
                 });
             }
         }

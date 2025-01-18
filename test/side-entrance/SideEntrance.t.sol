@@ -45,7 +45,8 @@ contract SideEntranceChallenge is Test {
      * CODE YOUR SOLUTION HERE
      */
     function test_sideEntrance() public checkSolvedByPlayer {
-        SideEntranceLenderPoolExploit exploit = new SideEntranceLenderPoolExploit(address(pool), recovery, ETHER_IN_POOL);
+        SideEntranceLenderPoolExploit exploit =
+            new SideEntranceLenderPoolExploit(address(pool), recovery, ETHER_IN_POOL);
         exploit.attack();
     }
 
@@ -59,7 +60,6 @@ contract SideEntranceChallenge is Test {
 }
 
 contract SideEntranceLenderPoolExploit {
-
     SideEntranceLenderPool public pool;
     address public recovery;
     uint256 public exploitAmount;
@@ -80,6 +80,5 @@ contract SideEntranceLenderPoolExploit {
         payable(recovery).transfer(exploitAmount);
     }
 
-    receive() external payable {}   
-
+    receive() external payable {}
 }

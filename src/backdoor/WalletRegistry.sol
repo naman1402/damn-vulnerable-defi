@@ -17,7 +17,7 @@ import {IProxyCreationCallback} from "safe-smart-account/contracts/proxies/IProx
 contract WalletRegistry is IProxyCreationCallback, Ownable {
     uint256 private constant EXPECTED_OWNERS_COUNT = 1;
     uint256 private constant EXPECTED_THRESHOLD = 1;
-    uint256 private constant PAYMENT_AMOUNT = 10e18;
+    uint256 private constant PAYMENT_AMOUNT = 10e18; // reward
 
     address public immutable singletonCopy;
     address public immutable walletFactory;
@@ -49,6 +49,7 @@ contract WalletRegistry is IProxyCreationCallback, Ownable {
         walletFactory = walletFactoryAddress;
         token = IERC20(tokenAddress);
 
+        // can create wallets
         for (uint256 i = 0; i < initialBeneficiaries.length; ++i) {
             unchecked {
                 beneficiaries[initialBeneficiaries[i]] = true;
@@ -56,6 +57,7 @@ contract WalletRegistry is IProxyCreationCallback, Ownable {
         }
     }
 
+    // add more beneficiaries, but can be called by owner only
     function addBeneficiary(address beneficiary) external onlyOwner {
         beneficiaries[beneficiary] = true;
     }
@@ -102,6 +104,7 @@ contract WalletRegistry is IProxyCreationCallback, Ownable {
         unchecked {
             walletOwner = owners[0];
         }
+        // owner must be the registered beneficiary
         if (!beneficiaries[walletOwner]) {
             revert OwnerIsNotABeneficiary();
         }
@@ -118,6 +121,7 @@ contract WalletRegistry is IProxyCreationCallback, Ownable {
         wallets[walletOwner] = walletAddress;
 
         // Pay tokens to the newly created wallet
+        // @audit Registry gives tokens before fully securing the wallet.
         SafeTransferLib.safeTransfer(address(token), walletAddress, PAYMENT_AMOUNT);
     }
 

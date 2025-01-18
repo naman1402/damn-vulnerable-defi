@@ -118,9 +118,7 @@ contract PuppetV3Challenge is Test {
     /**
      * CODE YOUR SOLUTION HERE
      */
-    function test_puppetV3() public checkSolvedByPlayer {
-        
-    }
+    function test_puppetV3() public checkSolvedByPlayer {}
 
     /**
      * CHECKS SUCCESS CONDITIONS - DO NOT TOUCH

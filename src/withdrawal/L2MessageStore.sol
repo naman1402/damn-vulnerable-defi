@@ -4,7 +4,7 @@ pragma solidity =0.8.25;
 
 /**
  * @notice This contract is not deployed in the challenge.
- *         We just include it for you to understand how the withdrawal logs were created. 
+ *         We just include it for you to understand how the withdrawal logs were created.
  */
 contract L2MessageStore {
     uint256 public nonce;

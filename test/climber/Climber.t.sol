@@ -84,9 +84,7 @@ contract ClimberChallenge is Test {
     /**
      * CODE YOUR SOLUTION HERE
      */
-    function test_climber() public checkSolvedByPlayer {
-        
-    }
+    function test_climber() public checkSolvedByPlayer {}
 
     /**
      * CHECKS SUCCESS CONDITIONS - DO NOT TOUCH

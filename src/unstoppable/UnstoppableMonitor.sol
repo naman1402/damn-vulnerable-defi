@@ -7,7 +7,7 @@ import {Owned} from "solmate/auth/Owned.sol";
 import {UnstoppableVault, ERC20} from "../unstoppable/UnstoppableVault.sol";
 
 /**
- * @notice Permissioned contract for on-chain monitoring of the vault's flashloan feature.  
+ * @notice Permissioned contract for on-chain monitoring of the vault's flashloan feature.
  */
 contract UnstoppableMonitor is Owned, IERC3156FlashBorrower {
     UnstoppableVault private immutable vault;
@@ -36,7 +36,7 @@ contract UnstoppableMonitor is Owned, IERC3156FlashBorrower {
         return keccak256("IERC3156FlashBorrower.onFlashLoan");
     }
 
-    // owner of this monitor contract can call this function to call flashloan function of vault 
+    // owner of this monitor contract can call this function to call flashloan function of vault
     function checkFlashLoan(uint256 amount) external onlyOwner {
         require(amount > 0);
 

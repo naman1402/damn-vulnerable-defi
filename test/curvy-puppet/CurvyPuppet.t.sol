@@ -157,9 +157,7 @@ contract CurvyPuppetChallenge is Test {
     /**
      * CODE YOUR SOLUTION HERE
      */
-    function test_curvyPuppet() public checkSolvedByPlayer {
-        
-    }
+    function test_curvyPuppet() public checkSolvedByPlayer {}
 
     /**
      * CHECKS SUCCESS CONDITIONS - DO NOT TOUCH

@@ -62,7 +62,7 @@ contract FreeRiderNFTMarketplace is ReentrancyGuard {
             revert InvalidPrice();
         }
 
-        // seller (msg.sender) must be the 
+        // seller (msg.sender) must be the
         if (msg.sender != _token.ownerOf(tokenId)) {
             revert CallerNotOwner(tokenId);
         }
@@ -110,11 +110,11 @@ contract FreeRiderNFTMarketplace is ReentrancyGuard {
 
         // transfer from seller to buyer
         DamnValuableNFT _token = token; // cache for gas savings
-        // address(this) has the approval to do the transaction 
+        // address(this) has the approval to do the transaction
         _token.safeTransferFrom(_token.ownerOf(tokenId), msg.sender, tokenId);
 
         // pay seller using cached token
-        // nft is already transferred to buyer, so new owner is buyer. 
+        // nft is already transferred to buyer, so new owner is buyer.
         // this will send the price to th buyer (not selled) as owner is changes
         // @audit seller (prev owner) will get nothing, but buyer will get the nft and the ether !!
         payable(_token.ownerOf(tokenId)).sendValue(priceToPay);

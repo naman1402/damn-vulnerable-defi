@@ -108,7 +108,7 @@ contract PuppetV2Challenge is Test {
         weth.deposit{value: player.balance}();
         weth.approve(address(lendingPool), type(uint256).max);
         uint256 poolBalance = token.balanceOf(address(lendingPool));
-        // 
+        //
 
         // after anipulating price, borrowing dvt using weth
         // and giving to recovery account

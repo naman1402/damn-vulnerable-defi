@@ -88,9 +88,7 @@ contract WithdrawalChallenge is Test {
     /**
      * CODE YOUR SOLUTION HERE
      */
-    function test_withdrawal() public checkSolvedByPlayer {
-        
-    }
+    function test_withdrawal() public checkSolvedByPlayer {}
 
     /**
      * CHECKS SUCCESS CONDITIONS - DO NOT TOUCH

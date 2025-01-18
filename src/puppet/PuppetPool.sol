@@ -54,14 +54,14 @@ contract PuppetPool is ReentrancyGuard {
     }
 
     function calculateDepositRequired(uint256 amount) public view returns (uint256) {
-        // note precision 
+        // note precision
         return amount * _computeOraclePrice() * DEPOSIT_FACTOR / 10 ** 18;
     }
 
-    // can do only one transaction 
-    // @audit ORACLE MANIPULATION  
+    // can do only one transaction
+    // @audit ORACLE MANIPULATION
     // we should not use contract's balance as it can be manipulated
-    // this can be manipulated by transferring all DVT tokens to contract to manipulate the price, more balance => less returned price 
+    // this can be manipulated by transferring all DVT tokens to contract to manipulate the price, more balance => less returned price
     function _computeOraclePrice() private view returns (uint256) {
         // calculates the price of the token in wei according to Uniswap pair
         return uniswapPair.balance * (10 ** 18) / token.balanceOf(uniswapPair);

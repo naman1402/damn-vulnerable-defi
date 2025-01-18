@@ -53,8 +53,8 @@ contract PuppetV2Pool {
     }
 
     // Fetch the price from Uniswap v2 using the official libraries
-    // @audit getReserves() can be manipulated 
-    // exchange all of the player's DVT for WETH, lower price to borrow DVT 
+    // @audit getReserves() can be manipulated
+    // exchange all of the player's DVT for WETH, lower price to borrow DVT
     function _getOracleQuote(uint256 amount) private view returns (uint256) {
         (uint256 reservesWETH, uint256 reservesToken) =
             UniswapV2Library.getReserves({factory: _uniswapFactory, tokenA: address(_weth), tokenB: address(_token)});

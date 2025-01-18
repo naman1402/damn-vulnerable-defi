@@ -7,7 +7,7 @@ import {L2MessageStore} from "./L2MessageStore.sol";
 
 /**
  * @notice This contract is not deployed in the challenge.
- *         We just include it for you to understand how the withdrawal logs were created. 
+ *         We just include it for you to understand how the withdrawal logs were created.
  */
 contract L2Handler {
     L2MessageStore public immutable l2MessageStore;

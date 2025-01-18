@@ -34,10 +34,9 @@ contract SideEntranceLenderPool {
 
     function flashLoan(uint256 amount) external {
         // @audit incorrect use of validation method
-        uint256 balanceBefore = address(this).balance; // 100 
+        uint256 balanceBefore = address(this).balance; // 100
 
-        IFlashLoanEtherReceiver(msg.sender).execute{value: amount}(); // 
-
+        IFlashLoanEtherReceiver(msg.sender).execute{value: amount}(); //
         if (address(this).balance < balanceBefore) {
             revert RepayFailed();
         }

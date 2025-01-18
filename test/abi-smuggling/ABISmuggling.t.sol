@@ -10,7 +10,7 @@ contract ABISmugglingChallenge is Test {
     address deployer = makeAddr("deployer");
     address player = makeAddr("player");
     address recovery = makeAddr("recovery");
-    
+
     uint256 constant VAULT_TOKEN_BALANCE = 1_000_000e18;
 
     DamnValuableToken token;
@@ -72,9 +72,7 @@ contract ABISmugglingChallenge is Test {
     /**
      * CODE YOUR SOLUTION HERE
      */
-    function test_abiSmuggling() public checkSolvedByPlayer {
-        
-    }
+    function test_abiSmuggling() public checkSolvedByPlayer {}
 
     /**
      * CHECKS SUCCESS CONDITIONS - DO NOT TOUCH

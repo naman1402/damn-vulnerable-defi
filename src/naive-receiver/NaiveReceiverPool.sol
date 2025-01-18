@@ -40,7 +40,6 @@ contract NaiveReceiverPool is Multicall, IERC3156FlashLender {
         return FIXED_FEE;
     }
 
-
     /// note player must execute less than or equal to 2 trnactions, vm.getNonce(player)
     // can drain receiver by calling fl with amount = 0, fee = 1 weth
     // can call 10 FL in single transaction using Multicall, satisfy nonce condition and drain 10 ETH from FlashLoanReceiver
@@ -54,7 +53,7 @@ contract NaiveReceiverPool is Multicall, IERC3156FlashLender {
         weth.transfer(address(receiver), amount);
         totalDeposits -= amount;
 
-        // Handle callback, FlashLoanReceiver.sol contract 
+        // Handle callback, FlashLoanReceiver.sol contract
         if (receiver.onFlashLoan(msg.sender, address(weth), amount, FIXED_FEE, data) != CALLBACK_SUCCESS) {
             revert CallbackFailed();
         }
