@@ -38,6 +38,7 @@ contract FreeRiderRecoveryManager is ReentrancyGuard, IERC721Receiver {
         nonReentrant
         returns (bytes4)
     {
+        // cannot be called directly
         if (msg.sender != address(nft)) {
             revert CallerNotNFT();
         }
@@ -54,6 +55,7 @@ contract FreeRiderRecoveryManager is ReentrancyGuard, IERC721Receiver {
             revert StillNotOwningToken(_tokenId);
         }
 
+        // on recived the 6th token, send the bounty to the beneficiary
         if (++received == 6) {
             address recipient = abi.decode(_data, (address));
             payable(recipient).sendValue(bounty);

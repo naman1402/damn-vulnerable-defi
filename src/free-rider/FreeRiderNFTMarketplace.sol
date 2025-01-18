@@ -62,6 +62,7 @@ contract FreeRiderNFTMarketplace is ReentrancyGuard {
             revert InvalidPrice();
         }
 
+        // seller (msg.sender) must be the 
         if (msg.sender != _token.ownerOf(tokenId)) {
             revert CallerNotOwner(tokenId);
         }
@@ -90,10 +91,17 @@ contract FreeRiderNFTMarketplace is ReentrancyGuard {
 
     function _buyOne(uint256 tokenId) private {
         uint256 priceToPay = offers[tokenId];
+
+        // should be for sale
         if (priceToPay == 0) {
             revert TokenNotOffered(tokenId);
         }
 
+        // as multiple _buyOne are called, priceToPay is price of nft with tokenId
+        // @audit but msg.value will be constant for buyMany
+        // so for msg.value of one nft [15 ETH], multiple nft can be bought
+        // although we will get this msg.value back as well
+        // to get fund for one NFT, we will use uniswap v2 pair
         if (msg.value < priceToPay) {
             revert InsufficientPayment();
         }
@@ -102,9 +110,13 @@ contract FreeRiderNFTMarketplace is ReentrancyGuard {
 
         // transfer from seller to buyer
         DamnValuableNFT _token = token; // cache for gas savings
+        // address(this) has the approval to do the transaction 
         _token.safeTransferFrom(_token.ownerOf(tokenId), msg.sender, tokenId);
 
         // pay seller using cached token
+        // nft is already transferred to buyer, so new owner is buyer. 
+        // this will send the price to th buyer (not selled) as owner is changes
+        // @audit seller (prev owner) will get nothing, but buyer will get the nft and the ether !!
         payable(_token.ownerOf(tokenId)).sendValue(priceToPay);
 
         emit NFTBought(msg.sender, tokenId, priceToPay);
