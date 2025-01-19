@@ -48,7 +48,7 @@ contract ClimberVault is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         if (amount > WITHDRAWAL_LIMIT) {
             revert InvalidWithdrawalAmount();
         }
-
+        // 15 days is the waiting period before being able to withdraw again
         if (block.timestamp <= _lastWithdrawalTimestamp + WAITING_PERIOD) {
             revert InvalidWithdrawalTime();
         }
@@ -66,7 +66,7 @@ contract ClimberVault is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     function getSweeper() external view returns (address) {
         return _sweeper;
     }
-
+    // @audit no access control, but a private function 
     function _setSweeper(address newSweeper) private {
         _sweeper = newSweeper;
     }
