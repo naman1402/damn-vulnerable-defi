@@ -66,7 +66,8 @@ contract ClimberVault is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     function getSweeper() external view returns (address) {
         return _sweeper;
     }
-    // @audit no access control, but a private function 
+    // @audit no access control, but a private function
+
     function _setSweeper(address newSweeper) private {
         _sweeper = newSweeper;
     }

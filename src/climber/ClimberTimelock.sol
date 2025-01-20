@@ -69,7 +69,7 @@ contract ClimberTimelock is ClimberTimelockBase {
     /**
      * Anyone can execute what's been scheduled via `schedule`
      */
-    // @audit readyAtTimestamp is not checked 
+    // @audit readyAtTimestamp is not checked
     function execute(address[] calldata targets, uint256[] calldata values, bytes[] calldata dataElements, bytes32 salt)
         external
         payable
@@ -92,7 +92,6 @@ contract ClimberTimelock is ClimberTimelockBase {
             targets[i].functionCallWithValue(dataElements[i], values[i]);
         }
 
-
         // these checks are made after the function calls
         if (getOperationState(id) != OperationState.ReadyForExecution) {
             revert NotReadyForExecution(id);
@@ -100,7 +99,8 @@ contract ClimberTimelock is ClimberTimelockBase {
 
         operations[id].executed = true;
     }
-    // no access control, can be increase only 
+    // no access control, can be increase only
+
     function updateDelay(uint64 newDelay) external {
         if (msg.sender != address(this)) {
             revert CallerNotTimelock();

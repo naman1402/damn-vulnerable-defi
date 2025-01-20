@@ -42,6 +42,7 @@ contract PuppetV3Pool {
         //TODO: use Permit2 (0x000000000022D473030F116dDEE9F6B43aC78BA3)
 
         // Pull WETH from caller
+        // deposit
         weth.transferFrom(msg.sender, address(this), depositOfWETHRequired);
 
         // internal accounting
@@ -53,12 +54,17 @@ contract PuppetV3Pool {
         emit Borrowed(msg.sender, depositOfWETHRequired, borrowAmount);
     }
 
+    // this will be 3 times higher
+    // how are tswap exploited: swap large amout to move price and wait for oracle update
+    // borrow at manipulated price
     function calculateDepositOfWETHRequired(uint256 amount) public view returns (uint256) {
         uint256 quote = _getOracleQuote(_toUint128(amount));
         return quote * DEPOSIT_FACTOR;
     }
 
     function _getOracleQuote(uint128 amount) private view returns (uint256) {
+        // @audit vulnerable to manipulation if TWAP_PERIOD too short (10 minutes)
+        // after manipulating, there is a brief time window for the attacker to take advantage of the lowered price and execute unfair loans
         (int24 arithmeticMeanTick,) = OracleLibrary.consult({pool: address(uniswapV3Pool), secondsAgo: TWAP_PERIOD});
         return OracleLibrary.getQuoteAtTick({
             tick: arithmeticMeanTick,
