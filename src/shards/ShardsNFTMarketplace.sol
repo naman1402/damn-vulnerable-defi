@@ -113,6 +113,10 @@ contract ShardsNFTMarketplace is IShardsNFTMarketplace, IERC721Receiver, ERC1155
      * @notice Called by buyers to partially/fully fill offers, paying in DVT.
      *         These purchases can be cancelled.
      */
+    // @audit calculation error
+    // final result can be zero if want is small value 
+    // hence we can buy some nft shards by paying 0 DVT tokens
+    // then we can cancel, return the shards and receive DVT tokens
     function fill(uint64 offerId, uint256 want) external returns (uint256 purchaseIndex) {
         Offer storage offer = offers[offerId];
         if (want == 0) revert BadAmount();

