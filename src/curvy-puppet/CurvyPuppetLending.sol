@@ -42,13 +42,15 @@ contract CurvyPuppetLending is ReentrancyGuard {
 
     function deposit(uint256 amount) external nonReentrant {
         positions[msg.sender].collateralAmount += amount;
+
+        // adding collateral token to the curve pool
         _pullAssets(collateralAsset, amount);
     }
 
     function withdraw(uint256 amount) external nonReentrant {
         if (amount == 0) revert InvalidAmount();
 
-        uint256 remainingCollateral = positions[msg.sender].collateralAmount - amount;
+        uint256 remainingCollateral = positions[msg.sender].collateralAmount - amount; // can be 0, underflow ?
         uint256 remainingCollateralValue = getCollateralValue(remainingCollateral);
         uint256 borrowValue = getBorrowValue(positions[msg.sender].borrowAmount);
 
@@ -75,9 +77,12 @@ contract CurvyPuppetLending is ReentrancyGuard {
 
         // Now do solvency check
         uint256 borrowAmountValue = getBorrowValue(amount);
+
+        // limit check
         if (currentBorrowValue + borrowAmountValue > maxBorrowValue) revert NotEnoughCollateral();
 
         // Update caller's position and transfer borrowed assets
+        // @audit this or borrowAmountValue ?
         positions[msg.sender].borrowAmount += amount;
         IERC20(borrowAsset).transfer(msg.sender, amount);
     }
@@ -87,6 +92,7 @@ contract CurvyPuppetLending is ReentrancyGuard {
         positions[msg.sender].borrowAmount -= amount;
         _pullAssets(borrowAsset, amount);
 
+        // if msg.sender does not borrow anything now, return collateral
         if (positions[msg.sender].borrowAmount == 0) {
             uint256 returnAmount = positions[msg.sender].collateralAmount;
             positions[msg.sender].collateralAmount = 0;
@@ -100,11 +106,13 @@ contract CurvyPuppetLending is ReentrancyGuard {
 
         uint256 collateralValue = getCollateralValue(collateralAmount) * 100;
         uint256 borrowValue = getBorrowValue(borrowAmount) * 175;
+        // if collateral is more than borrow value, liquidation is not needed [revert in that case]
         if (collateralValue >= borrowValue) revert HealthyPosition(borrowValue, collateralValue);
 
         delete positions[target];
-
+        // transfer collateral to liquidator and borrowedAsset to this pool
         _pullAssets(borrowAsset, borrowAmount);
+        // @audit collateralValue is value * 100 ??
         IERC20(collateralAsset).transfer(msg.sender, collateralAmount);
     }
 
@@ -126,6 +134,7 @@ contract CurvyPuppetLending is ReentrancyGuard {
         return positions[who].collateralAmount;
     }
 
+    // receiver is address(this), to deposit tokens to the curve pool
     function _pullAssets(address asset, uint256 amount) private {
         permit2.transferFrom({from: msg.sender, to: address(this), amount: SafeCast.toUint160(amount), token: asset});
     }

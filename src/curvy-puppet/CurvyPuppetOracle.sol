@@ -32,7 +32,7 @@ contract CurvyPuppetOracle is Ownable {
 
     function setPrice(address asset, uint256 value, uint256 expiration) external onlyOwner {
         if (value == 0) revert InvalidPrice();
-        if (expiration <= block.timestamp || expiration > block.timestamp + 2 days) revert InvalidExpiration();
+        if (expiration <= block.timestamp || expiration > block.timestamp + 2 days) revert InvalidExpiration(); // expiration must be within 2 days
         prices[asset] = Price(value, expiration);
     }
 }
