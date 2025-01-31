@@ -43,6 +43,7 @@ contract L1Forwarder is ReentrancyGuard, Ownable {
             abi.encodeWithSignature("forwardMessage(uint256,address,address,bytes)", nonce, l2Sender, target, message)
         );
 
+        // authorization check for L2Handler
         if (msg.sender == address(gateway) && gateway.xSender() == l2Handler) {
             require(!failedMessages[messageId]);
         } else {
@@ -63,6 +64,7 @@ contract L1Forwarder is ReentrancyGuard, Ownable {
         }
         context = prevContext;
 
+        // recording
         if (success) {
             successfulMessages[messageId] = true;
         } else {

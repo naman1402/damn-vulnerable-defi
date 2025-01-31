@@ -45,6 +45,8 @@ contract L1Gateway is OwnableRoles {
 
         // Only allow trusted operators to finalize without proof
         bool isOperator = hasAnyRole(msg.sender, OPERATOR_ROLE);
+
+        // must be in merkle tree if not operator, if not in merkle tree then revert 
         if (!isOperator) {
             if (MerkleProof.verify(proof, root, leaf)) {
                 emit ValidProof(proof, root, leaf);
@@ -56,6 +58,7 @@ contract L1Gateway is OwnableRoles {
         if (finalizedWithdrawals[leaf]) revert AlreadyFinalized(leaf);
 
         // state changes before external call
+        // avoid reentrancy
         finalizedWithdrawals[leaf] = true;
         counter++;
 
@@ -64,6 +67,8 @@ contract L1Gateway is OwnableRoles {
         assembly {
             success := call(gas(), target, 0, add(message, 0x20), mload(message), 0, 0) // call with 0 value. Don't copy returndata.
         }
+        // not check success 
+        // ? 
         xSender = address(0xBADBEEF);
 
         emit FinalizedWithdrawal(leaf, success, isOperator);
